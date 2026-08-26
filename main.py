@@ -17,7 +17,7 @@ def main():
     parser.add_argument(
         "--file", type=str,
         # default="DTOPS_AlCaF2_10x_1p0-1p0_100k-100_313p2mV.txt",
-        default = r"C:\Users\d-cahill\OneDrive - University of Illinois - Urbana\Documents\Data\TOPS data\aug1726\peek_23c.txt",
+        default = r"C:\Users\d-cahill\OneDrive - University of Illinois - Urbana\Documents\Data\TOPS data\aug2526\sic_dtops_highf.txt",
         help="Path to raw lock-in data text file"
     )
     parser.add_argument("--save", action="store_true", help="Save experimental and fitted data to test.dat")
@@ -36,13 +36,13 @@ def main():
     print(f"Loading data from: {data_path}")
 
     # ======================= sample parameters ===============================
-    # Al/CaF2
-    lambda_down = [20.0, 0.2, 0.2]      # cross-plane thermal conductivity (W/m-K)
+    # 
+    lambda_down = [20.0, 0.2, 400]      # cross-plane thermal conductivity (W/m-K)
     eta_down = [1.0, 1.0, 1.0]           # anisotropy of thermal conductivity (kx/ky)
-    C_down = [2.65e6, 0.1e6, 2.0e6]      # volumetric heat capacity (J/m^3-K); 2.73 for CaF2
-    h_down = [60e-9, 1e-9, 1e-3]   # thickness (m)
+    C_down = [2.65e6, 0.1e6, 2.21e6]      # volumetric heat capacity (J/m^3-K); 2.73 for CaF2, 2.21 for SiC, 2.65 for NbV
+    h_down = [60e-9, 1e-9, 1e-3]         # thickness (m)
     niu = 0.30                           # Poisson's ratio of the bulk material
-    alpha_T = 40e-6                      # coefficient of thermal expansion (CTE) (K^-1)
+    alpha_T = 2e-6                      # coefficient of thermal expansion (CTE) (K^-1)
 
     # Air
     lambda_up = 0.028
@@ -51,8 +51,8 @@ def main():
     h_up = 1e-3
 
     # ======================== experimental parameters ========================
-    obj = 10.0                          # e.g., 10 for 10x lens
-    lens_transmittance = 0.85
+    obj = 2.0                            # e.g., 10 for 10x lens
+    lens_transmittance = 0.85            # 0.85 for use with window; 0.92 without window
     focal_length = 5.0 / obj * 40e-3     # focal length of objective lens
 
     r_rms = (5.0 / obj) * 12.8e-6        # Focused pump/probe beam 1/e^2 radius (m)
@@ -60,16 +60,16 @@ def main():
     C_probe = 0.90                      # Probe factor
     w_1_d = 0.92e-3                     # Probe beam 1/e^2 radius at detector
 
-    incident_pump = 0.2e-3               # Average power of pump before lens (W)
-    incident_probe = 0.1e-3              # Laser power of probe before lens (W)
+    incident_pump = 4e-3               # Average power of pump before lens (W)
+    incident_probe = 1e-3              # Laser power of probe before lens (W)
 
-    n_metal = 2.9
-    k_metal = 8.2
-    # n_metal=2.63  # for NbV Nb0.43V0.57 at lamda 780nm or absorbance = 0.40
-    # k_metal=3.59
+    # n_metal = 2.9
+    # k_metal = 8.2
+    n_metal=2.63  # for NbV Nb0.43V0.57 at lamda 780nm or absorbance = 0.40
+    k_metal=3.59
     sample_reflectance = (np.abs(n_metal - 1 + 1j * k_metal)**2) / (np.abs(n_metal + 1 + 1j * k_metal)**2)
     sample_absorbance=1-sample_reflectance
-    sample_absorbance=0.40
+    #sample_absorbance=0.40
     A_pump = incident_pump * lens_transmittance * sample_absorbance * (4.0 / np.pi)
     A_dc_pump = incident_pump * lens_transmittance * sample_absorbance
     A_dc_probe = incident_probe * lens_transmittance * sample_absorbance
@@ -145,7 +145,7 @@ def main():
     if FDPBD_fitting1:
         print("Running FDPBD Fitting 1 (in-phase + out-of-phase)...")
         x_guess = [lambda_down[2], alpha_T]
-        bounds = ([0.0, -100.0], [100.0, 100.0])
+        bounds = ([0.0, -0.01], [1000.0, 0.01])
 
         x_sol, res, ci, perr = fit_inout(
             f, theta_exp_in, theta_exp_out,
