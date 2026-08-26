@@ -5,5 +5,6 @@
 **/__pycache__/
 *.pyc
 
-# Output and results data
-results.txt
+# input and output data
+*.txt
+*.dat
